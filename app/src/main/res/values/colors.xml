@@ -7,4 +7,14 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="primary">#FF3F51B5</color>
+    <color name="primary_variant">#FF303F9F</color>
+    <color name="secondary">#FFFF5722</color>
+    <color name="background">#FFF5F5F5</color>
+    <color name="subject_math">#FF5C6BC0</color>
+    <color name="subject_science">#FF26A69A</color>
+    <color name="subject_korean">#FFEF5350</color>
+    <color name="subject_english">#FF66BB6A</color>
+    <color name="subject_pe">#FFFFA726</color>
+    <color name="subject_social">#FFAB47BC</color>
 </resources>
