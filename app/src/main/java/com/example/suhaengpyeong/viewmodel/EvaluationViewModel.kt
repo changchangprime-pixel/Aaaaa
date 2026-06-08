@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import java.time.LocalDate
 
@@ -15,7 +16,16 @@ class EvaluationViewModel : ViewModel() {
 
     private val repository = EvaluationRepository()
 
-    val evaluations: StateFlow<List<Evaluation>> = repository.evaluations
+    val allEvaluations: StateFlow<List<Evaluation>> = repository.evaluations
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    private val _selectedClass = MutableStateFlow(1)
+    val selectedClass: StateFlow<Int> = _selectedClass.asStateFlow()
+
+    // evaluations filtered to the selected class
+    val evaluations: StateFlow<List<Evaluation>> = combine(
+        repository.evaluations, _selectedClass
+    ) { evals, cls -> evals.filter { it.classNumber == cls } }
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     private val _isAdminMode = MutableStateFlow(false)
@@ -26,6 +36,10 @@ class EvaluationViewModel : ViewModel() {
 
     private val _currentMonth = MutableStateFlow<LocalDate>(LocalDate.now().withDayOfMonth(1))
     val currentMonth: StateFlow<LocalDate> = _currentMonth.asStateFlow()
+
+    fun selectClass(classNumber: Int) {
+        _selectedClass.value = classNumber
+    }
 
     fun toggleAdminMode() {
         _isAdminMode.value = !_isAdminMode.value

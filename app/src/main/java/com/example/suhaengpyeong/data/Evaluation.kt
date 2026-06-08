@@ -15,6 +15,7 @@ enum class EvaluationType(val displayName: String) {
 
 data class Evaluation(
     val id: String = UUID.randomUUID().toString(),
+    val classNumber: Int,  // 1~10반
     val subject: String,
     val title: String,
     val date: LocalDate,

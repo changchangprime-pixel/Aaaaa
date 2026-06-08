@@ -32,7 +32,9 @@ fun AddEditEvaluationScreen(
 ) {
     val isEditing = evaluationId != null
     val existing = if (isEditing) viewModel.getEvaluationById(evaluationId!!) else null
+    val currentClass by viewModel.selectedClass.collectAsState()
 
+    var selectedClass by remember { mutableStateOf(existing?.classNumber ?: currentClass) }
     var subject by remember { mutableStateOf(existing?.subject ?: "") }
     var title by remember { mutableStateOf(existing?.title ?: "") }
     var description by remember { mutableStateOf(existing?.description ?: "") }
@@ -43,6 +45,7 @@ fun AddEditEvaluationScreen(
     var titleError by remember { mutableStateOf(false) }
 
     // Dropdown states
+    var classDropdownExpanded by remember { mutableStateOf(false) }
     var subjectDropdownExpanded by remember { mutableStateOf(false) }
     var typeDropdownExpanded by remember { mutableStateOf(false) }
 
@@ -111,6 +114,54 @@ fun AddEditEvaluationScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            // Class selector
+            Column {
+                Text(
+                    text = "반 *",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                ExposedDropdownMenuBox(
+                    expanded = classDropdownExpanded,
+                    onExpandedChange = { classDropdownExpanded = it }
+                ) {
+                    OutlinedTextField(
+                        value = "${selectedClass}반",
+                        onValueChange = {},
+                        readOnly = true,
+                        trailingIcon = {
+                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = classDropdownExpanded)
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor()
+                    )
+                    ExposedDropdownMenu(
+                        expanded = classDropdownExpanded,
+                        onDismissRequest = { classDropdownExpanded = false }
+                    ) {
+                        (1..10).forEach { cls ->
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        text = "${cls}반",
+                                        fontWeight = if (cls == selectedClass) FontWeight.Bold else FontWeight.Normal
+                                    )
+                                },
+                                onClick = {
+                                    selectedClass = cls
+                                    classDropdownExpanded = false
+                                },
+                                leadingIcon = if (cls == selectedClass) {
+                                    { Icon(Icons.Default.Check, contentDescription = null) }
+                                } else null
+                            )
+                        }
+                    }
+                }
+            }
+
             // Subject field with dropdown
             Column {
                 Text(
@@ -310,6 +361,7 @@ fun AddEditEvaluationScreen(
                         if (isEditing && existing != null) {
                             viewModel.updateEvaluation(
                                 existing.copy(
+                                    classNumber = selectedClass,
                                     subject = subject.trim(),
                                     title = title.trim(),
                                     date = selectedDate,
@@ -320,6 +372,7 @@ fun AddEditEvaluationScreen(
                         } else {
                             viewModel.addEvaluation(
                                 Evaluation(
+                                    classNumber = selectedClass,
                                     subject = subject.trim(),
                                     title = title.trim(),
                                     date = selectedDate,

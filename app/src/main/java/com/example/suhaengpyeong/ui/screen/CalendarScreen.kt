@@ -45,6 +45,9 @@ fun CalendarScreen(
     val isAdminMode by viewModel.isAdminMode.collectAsState()
     val selectedDate by viewModel.selectedDate.collectAsState()
     val currentMonth by viewModel.currentMonth.collectAsState()
+    val selectedClass by viewModel.selectedClass.collectAsState()
+
+    var classDropdownExpanded by remember { mutableStateOf(false) }
 
     val datesWithEvals = remember(evaluations, currentMonth) {
         viewModel.getDatesWithEvaluations(currentMonth)
@@ -63,6 +66,47 @@ fun CalendarScreen(
                     )
                 },
                 actions = {
+                    // 반 선택 드롭다운
+                    Box {
+                        TextButton(
+                            onClick = { classDropdownExpanded = true },
+                            colors = ButtonDefaults.textButtonColors(contentColor = Color.White)
+                        ) {
+                            Text(
+                                text = "${selectedClass}반",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 15.sp
+                            )
+                            Icon(
+                                imageVector = Icons.Default.ArrowDropDown,
+                                contentDescription = "반 선택"
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = classDropdownExpanded,
+                            onDismissRequest = { classDropdownExpanded = false }
+                        ) {
+                            (1..10).forEach { cls ->
+                                DropdownMenuItem(
+                                    text = {
+                                        Text(
+                                            text = "${cls}반",
+                                            fontWeight = if (cls == selectedClass) FontWeight.Bold else FontWeight.Normal,
+                                            color = if (cls == selectedClass) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                                        )
+                                    },
+                                    onClick = {
+                                        viewModel.selectClass(cls)
+                                        classDropdownExpanded = false
+                                    },
+                                    trailingIcon = if (cls == selectedClass) {
+                                        { Icon(Icons.Default.Check, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
+                                    } else null
+                                )
+                            }
+                        }
+                    }
+                    // 관리자 모드 토글
                     IconButton(onClick = { viewModel.toggleAdminMode() }) {
                         Icon(
                             imageVector = if (isAdminMode) Icons.Default.AdminPanelSettings else Icons.Default.Person,
