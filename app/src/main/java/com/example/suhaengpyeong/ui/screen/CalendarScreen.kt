@@ -60,7 +60,10 @@ fun CalendarScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text("수행평가 관리", fontWeight = FontWeight.Bold)
+                    Text(
+                        text = "수행평가 관리",
+                        fontWeight = FontWeight.Bold
+                    )
                 },
                 actions = {
                     // 반 선택 드롭다운
@@ -101,7 +104,7 @@ fun CalendarScreen(
                         Icon(
                             imageVector = if (isAdminMode) Icons.Default.AdminPanelSettings else Icons.Default.Person,
                             contentDescription = if (isAdminMode) "관리자 모드 해제" else "관리자 모드",
-                            tint = if (isAdminMode) MaterialTheme.colorScheme.secondary else Color.White
+                            tint = if (isAdminMode) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onSurface
                         )
                     }
                 },
@@ -113,12 +116,20 @@ fun CalendarScreen(
             )
         },
         floatingActionButton = {
-            AnimatedVisibility(visible = isAdminMode, enter = fadeIn(), exit = fadeOut()) {
+            AnimatedVisibility(
+                visible = isAdminMode,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
                 FloatingActionButton(
                     onClick = onNavigateToAdd,
                     containerColor = MaterialTheme.colorScheme.secondary
                 ) {
-                    Icon(Icons.Default.Add, contentDescription = "추가", tint = Color.White)
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "수행평가 추가",
+                        tint = Color.White
+                    )
                 }
             }
         }
@@ -129,6 +140,7 @@ fun CalendarScreen(
                 .padding(innerPadding)
                 .background(MaterialTheme.colorScheme.background)
         ) {
+            // Admin mode banner
             if (isAdminMode) {
                 item {
                     Row(
@@ -138,20 +150,33 @@ fun CalendarScreen(
                             .padding(horizontal = 16.dp, vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(Icons.Default.AdminPanelSettings, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                        Icon(
+                            imageVector = Icons.Default.AdminPanelSettings,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(16.dp)
+                        )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("관리자 모드 — ${selectedClass}반 수행평가를 추가·수정·삭제할 수 있습니다", color = Color.White, fontSize = 12.sp)
+                        Text(
+                            text = "관리자 모드 활성화됨 - 수행평가를 추가, 수정, 삭제할 수 있습니다",
+                            color = Color.White,
+                            fontSize = 12.sp
+                        )
                     }
                 }
             }
 
+            // Calendar card
             item {
                 Card(
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
                     shape = RoundedCornerShape(16.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
+                        // Month navigation header
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -161,7 +186,7 @@ fun CalendarScreen(
                                 Icon(Icons.Default.ChevronLeft, contentDescription = "이전 달")
                             }
                             Text(
-                                "${currentMonth.year}년 ${currentMonth.monthValue}월",
+                                text = "${currentMonth.year}년 ${currentMonth.monthValue}월",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold
                             )
@@ -172,10 +197,12 @@ fun CalendarScreen(
 
                         Spacer(modifier = Modifier.height(8.dp))
 
+                        // Day of week headers
+                        val daysOfWeek = listOf("일", "월", "화", "수", "목", "금", "토")
                         Row(modifier = Modifier.fillMaxWidth()) {
-                            listOf("일", "월", "화", "수", "목", "금", "토").forEachIndexed { index, day ->
+                            daysOfWeek.forEachIndexed { index, day ->
                                 Text(
-                                    day,
+                                    text = day,
                                     modifier = Modifier.weight(1f),
                                     textAlign = TextAlign.Center,
                                     fontWeight = FontWeight.SemiBold,
@@ -191,57 +218,66 @@ fun CalendarScreen(
 
                         Spacer(modifier = Modifier.height(4.dp))
 
+                        // Calendar grid
                         CalendarGrid(
                             currentMonth = currentMonth,
                             selectedDate = selectedDate,
                             datesWithEvaluations = datesWithEvals,
+                            evaluations = evaluations,
                             onDateSelected = { viewModel.selectDate(it) }
                         )
                     }
                 }
             }
 
+            // Selected date header
             item {
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        "${selectedDate.monthValue}월 ${selectedDate.dayOfMonth}일",
+                        text = "${selectedDate.monthValue}월 ${selectedDate.dayOfMonth}일",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.width(8.dp))
+                    val dow = selectedDate.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.KOREAN)
                     Text(
-                        "(${selectedDate.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.KOREAN)})",
+                        text = "($dow)",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                     )
                     Spacer(modifier = Modifier.weight(1f))
                     Text(
-                        "${selectedDateEvals.size}개",
+                        text = "${selectedDateEvals.size}개",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.primary
                     )
                 }
             }
 
+            // Evaluations for selected date
             if (selectedDateEvals.isEmpty()) {
                 item {
                     Box(
-                        modifier = Modifier.fillMaxWidth().padding(32.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(32.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Icon(
-                                Icons.Default.EventAvailable,
+                                imageVector = Icons.Default.EventAvailable,
                                 contentDescription = null,
                                 modifier = Modifier.size(48.dp),
                                 tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                "이 날에는 수행평가가 없습니다",
+                                text = "이 날에는 수행평가가 없습니다",
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                                 style = MaterialTheme.typography.bodyMedium
                             )
@@ -260,6 +296,7 @@ fun CalendarScreen(
                 }
             }
 
+            // Spacer at bottom for FAB
             item { Spacer(modifier = Modifier.height(80.dp)) }
         }
     }
@@ -269,21 +306,28 @@ fun CalendarScreen(
 fun CalendarGrid(
     currentMonth: LocalDate,
     selectedDate: LocalDate,
-    datesWithEvaluations: Map<LocalDate, List<Evaluation>>,
+    datesWithEvaluations: Set<LocalDate>,
+    evaluations: List<Evaluation>,
     onDateSelected: (LocalDate) -> Unit
 ) {
     val firstDay = currentMonth.withDayOfMonth(1)
     val lastDay = currentMonth.withDayOfMonth(currentMonth.lengthOfMonth())
-    val startOffset = firstDay.dayOfWeek.value % 7
-    val today = LocalDate.now()
+    val startOffset = firstDay.dayOfWeek.value % 7  // Sunday = 0
 
+    val today = LocalDate.now()
     val weeks = mutableListOf<List<LocalDate?>>()
     var currentWeek = mutableListOf<LocalDate?>()
+
+    // Fill leading empty days
     repeat(startOffset) { currentWeek.add(null) }
+
     var day = firstDay
     while (!day.isAfter(lastDay)) {
         currentWeek.add(day)
-        if (currentWeek.size == 7) { weeks.add(currentWeek); currentWeek = mutableListOf() }
+        if (currentWeek.size == 7) {
+            weeks.add(currentWeek)
+            currentWeek = mutableListOf()
+        }
         day = day.plusDays(1)
     }
     if (currentWeek.isNotEmpty()) {
@@ -296,17 +340,23 @@ fun CalendarGrid(
             Row(modifier = Modifier.fillMaxWidth()) {
                 week.forEach { date ->
                     Box(
-                        modifier = Modifier.weight(1f).aspectRatio(1f).padding(2.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .aspectRatio(1f)
+                            .padding(2.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         if (date != null) {
                             val isSelected = date == selectedDate
                             val isToday = date == today
-                            val evalColors = datesWithEvaluations[date]
-                                ?.map { subjectColor(it.subject) }
-                                ?.distinct()
-                                ?.take(3)
-                                ?: emptyList()
+                            val hasEvals = date in datesWithEvaluations
+                            val evalColors = if (hasEvals) {
+                                evaluations
+                                    .filter { it.date == date }
+                                    .map { subjectColor(it.subject) }
+                                    .distinct()
+                                    .take(3)
+                            } else emptyList()
 
                             Column(
                                 modifier = Modifier
@@ -314,7 +364,11 @@ fun CalendarGrid(
                                     .clip(RoundedCornerShape(8.dp))
                                     .then(
                                         if (isSelected) Modifier.background(MaterialTheme.colorScheme.primary)
-                                        else if (isToday) Modifier.border(2.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(8.dp))
+                                        else if (isToday) Modifier.border(
+                                            2.dp,
+                                            MaterialTheme.colorScheme.primary,
+                                            RoundedCornerShape(8.dp)
+                                        )
                                         else Modifier
                                     )
                                     .clickable { onDateSelected(date) }
@@ -344,6 +398,7 @@ fun CalendarGrid(
                                                     .size(5.dp)
                                                     .clip(CircleShape)
                                                     .background(if (isSelected) Color.White.copy(alpha = 0.8f) else color)
+                                                    .padding(horizontal = 1.dp)
                                             )
                                             Spacer(modifier = Modifier.width(1.dp))
                                         }
@@ -374,12 +429,19 @@ fun EvaluationListItem(
             title = { Text("수행평가 삭제") },
             text = { Text("'${evaluation.title}'을(를) 삭제하시겠습니까?") },
             confirmButton = {
-                TextButton(onClick = { onDelete(); showDeleteDialog = false }) {
+                TextButton(
+                    onClick = {
+                        onDelete()
+                        showDeleteDialog = false
+                    }
+                ) {
                     Text("삭제", color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteDialog = false }) { Text("취소") }
+                TextButton(onClick = { showDeleteDialog = false }) {
+                    Text("취소")
+                }
             }
         )
     }
@@ -387,45 +449,111 @@ fun EvaluationListItem(
     val subjectClr = subjectColor(evaluation.subject)
 
     Card(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp).clickable(onClick = onClick),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 4.dp)
+            .clickable(onClick = onClick),
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Box(modifier = Modifier.width(6.dp).height(72.dp).background(subjectClr))
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(0.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Subject color bar
+            Box(
+                modifier = Modifier
+                    .width(6.dp)
+                    .fillMaxHeight()
+                    .background(subjectClr)
+                    .defaultMinSize(minHeight = 60.dp)
+            )
+            Box(
+                modifier = Modifier
+                    .width(6.dp)
+                    .height(60.dp)
+                    .background(subjectClr)
+            )
 
             Column(
-                modifier = Modifier.weight(1f).padding(horizontal = 12.dp, vertical = 12.dp)
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 12.dp, vertical = 12.dp)
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Surface(shape = RoundedCornerShape(4.dp), color = subjectClr.copy(alpha = 0.15f)) {
+                    // Subject chip
+                    Surface(
+                        shape = RoundedCornerShape(4.dp),
+                        color = subjectClr.copy(alpha = 0.15f)
+                    ) {
                         Text(
-                            evaluation.subject,
+                            text = evaluation.subject,
                             modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                            fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = subjectClr
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = subjectClr
                         )
                     }
                     Spacer(modifier = Modifier.width(6.dp))
+                    // Type chip
                     EvalTypeChip(type = evaluation.type)
                 }
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(evaluation.title, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(
+                    text = evaluation.title,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Medium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
                 if (evaluation.description.isNotBlank()) {
-                    Text(evaluation.description, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(
+                        text = evaluation.description,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
                 }
             }
 
             if (isAdminMode) {
-                Column(modifier = Modifier.padding(end = 8.dp), verticalArrangement = Arrangement.Center) {
-                    IconButton(onClick = onEdit, modifier = Modifier.size(36.dp)) {
-                        Icon(Icons.Default.Edit, contentDescription = "수정", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
+                Column(
+                    modifier = Modifier.padding(end = 8.dp),
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    IconButton(
+                        onClick = onEdit,
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Edit,
+                            contentDescription = "수정",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(18.dp)
+                        )
                     }
-                    IconButton(onClick = { showDeleteDialog = true }, modifier = Modifier.size(36.dp)) {
-                        Icon(Icons.Default.Delete, contentDescription = "삭제", tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(18.dp))
+                    IconButton(
+                        onClick = { showDeleteDialog = true },
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Delete,
+                            contentDescription = "삭제",
+                            tint = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.size(18.dp)
+                        )
                     }
                 }
             } else {
-                Icon(Icons.Default.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f), modifier = Modifier.padding(end = 12.dp))
+                Icon(
+                    Icons.Default.ChevronRight,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+                    modifier = Modifier.padding(end = 12.dp)
+                )
             }
         }
     }
@@ -433,16 +561,34 @@ fun EvaluationListItem(
 
 @Composable
 fun EvalTypeChip(type: EvaluationType) {
-    val (bgColor, textColor, label) = when (type) {
-        EvaluationType.WRITTEN -> Triple(Color(0xFFE8EAF6), Color(0xFF3949AB), "필기")
-        EvaluationType.PRACTICAL -> Triple(Color(0xFFE0F2F1), Color(0xFF00796B), "실기")
-        EvaluationType.PRESENTATION -> Triple(Color(0xFFFFEBEE), Color(0xFFC62828), "발표")
-        EvaluationType.SUBMISSION -> Triple(Color(0xFFFFF3E0), Color(0xFFE65100), "제출")
-        EvaluationType.PROJECT -> Triple(Color(0xFFE8F5E9), Color(0xFF2E7D32), "프로젝트")
-        EvaluationType.ORAL -> Triple(Color(0xFFF3E5F5), Color(0xFF6A1B9A), "구술")
-        EvaluationType.OTHER -> Triple(Color(0xFFECEFF1), Color(0xFF37474F), "기타")
+    val (bgColor, label) = when (type) {
+        EvaluationType.WRITTEN -> Pair(Color(0xFFE8EAF6), "필기")
+        EvaluationType.PRACTICAL -> Pair(Color(0xFFE0F2F1), "실기")
+        EvaluationType.PRESENTATION -> Pair(Color(0xFFFFEBEE), "발표")
+        EvaluationType.SUBMISSION -> Pair(Color(0xFFFFF3E0), "제출")
+        EvaluationType.PROJECT -> Pair(Color(0xFFE8F5E9), "프로젝트")
+        EvaluationType.ORAL -> Pair(Color(0xFFF3E5F5), "구술")
+        EvaluationType.OTHER -> Pair(Color(0xFFECEFF1), "기타")
     }
-    Surface(shape = RoundedCornerShape(4.dp), color = bgColor) {
-        Text(label, modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp), fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = textColor)
+    val textColor = when (type) {
+        EvaluationType.WRITTEN -> Color(0xFF3949AB)
+        EvaluationType.PRACTICAL -> Color(0xFF00796B)
+        EvaluationType.PRESENTATION -> Color(0xFFC62828)
+        EvaluationType.SUBMISSION -> Color(0xFFE65100)
+        EvaluationType.PROJECT -> Color(0xFF2E7D32)
+        EvaluationType.ORAL -> Color(0xFF6A1B9A)
+        EvaluationType.OTHER -> Color(0xFF37474F)
+    }
+    Surface(
+        shape = RoundedCornerShape(4.dp),
+        color = bgColor
+    ) {
+        Text(
+            text = label,
+            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+            fontSize = 11.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = textColor
+        )
     }
 }

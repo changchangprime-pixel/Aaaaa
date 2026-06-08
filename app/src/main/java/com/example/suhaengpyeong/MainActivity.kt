@@ -5,14 +5,14 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.example.suhaengpyeong.navigation.AppNavGraph
-import com.example.suhaengpyeong.ui.theme.SuhaengpyeongTheme
+import com.example.suhaengpyeong.ui.theme.SuhaengPyeongTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            SuhaengpyeongTheme {
+            SuhaengPyeongTheme {
                 AppNavGraph()
             }
         }

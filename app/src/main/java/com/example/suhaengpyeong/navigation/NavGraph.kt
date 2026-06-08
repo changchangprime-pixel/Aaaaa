@@ -29,30 +29,58 @@ fun AppNavGraph(
     navController: NavHostController = rememberNavController(),
     viewModel: EvaluationViewModel = viewModel()
 ) {
-    NavHost(navController = navController, startDestination = Screen.Calendar.route) {
+    NavHost(
+        navController = navController,
+        startDestination = Screen.Calendar.route
+    ) {
         composable(Screen.Calendar.route) {
             CalendarScreen(
                 viewModel = viewModel,
-                onNavigateToDetail = { navController.navigate(Screen.Detail.createRoute(it)) },
-                onNavigateToAdd = { navController.navigate(Screen.Add.route) },
-                onNavigateToEdit = { navController.navigate(Screen.Edit.createRoute(it)) }
+                onNavigateToDetail = { id ->
+                    navController.navigate(Screen.Detail.createRoute(id))
+                },
+                onNavigateToAdd = {
+                    navController.navigate(Screen.Add.route)
+                },
+                onNavigateToEdit = { id ->
+                    navController.navigate(Screen.Edit.createRoute(id))
+                }
             )
         }
-        composable(Screen.Detail.route, arguments = listOf(navArgument("evaluationId") { type = NavType.StringType })) { back ->
-            val id = back.arguments?.getString("evaluationId") ?: return@composable
+
+        composable(
+            route = Screen.Detail.route,
+            arguments = listOf(navArgument("evaluationId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val evaluationId = backStackEntry.arguments?.getString("evaluationId") ?: return@composable
             EvaluationDetailScreen(
-                evaluationId = id,
+                evaluationId = evaluationId,
                 viewModel = viewModel,
                 onNavigateBack = { navController.popBackStack() },
-                onNavigateToEdit = { navController.navigate(Screen.Edit.createRoute(it)) }
+                onNavigateToEdit = { id ->
+                    navController.navigate(Screen.Edit.createRoute(id))
+                }
             )
         }
+
         composable(Screen.Add.route) {
-            AddEditEvaluationScreen(evaluationId = null, viewModel = viewModel, onNavigateBack = { navController.popBackStack() })
+            AddEditEvaluationScreen(
+                evaluationId = null,
+                viewModel = viewModel,
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
-        composable(Screen.Edit.route, arguments = listOf(navArgument("evaluationId") { type = NavType.StringType })) { back ->
-            val id = back.arguments?.getString("evaluationId") ?: return@composable
-            AddEditEvaluationScreen(evaluationId = id, viewModel = viewModel, onNavigateBack = { navController.popBackStack() })
+
+        composable(
+            route = Screen.Edit.route,
+            arguments = listOf(navArgument("evaluationId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val evaluationId = backStackEntry.arguments?.getString("evaluationId") ?: return@composable
+            AddEditEvaluationScreen(
+                evaluationId = evaluationId,
+                viewModel = viewModel,
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
     }
 }

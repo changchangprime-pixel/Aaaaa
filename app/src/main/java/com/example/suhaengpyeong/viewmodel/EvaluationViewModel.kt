@@ -33,22 +33,46 @@ class EvaluationViewModel : ViewModel() {
     private val _currentMonth = MutableStateFlow<LocalDate>(LocalDate.now().withDayOfMonth(1))
     val currentMonth: StateFlow<LocalDate> = _currentMonth.asStateFlow()
 
-    fun selectClass(classNumber: Int) { _selectedClass.value = classNumber }
-    fun toggleAdminMode() { _isAdminMode.value = !_isAdminMode.value }
-    fun selectDate(date: LocalDate) { _selectedDate.value = date }
-    fun previousMonth() { _currentMonth.value = _currentMonth.value.minusMonths(1) }
-    fun nextMonth() { _currentMonth.value = _currentMonth.value.plusMonths(1) }
+    fun selectClass(classNumber: Int) {
+        _selectedClass.value = classNumber
+    }
 
-    fun addEvaluation(evaluation: Evaluation) = repository.addEvaluation(evaluation)
-    fun updateEvaluation(evaluation: Evaluation) = repository.updateEvaluation(evaluation)
-    fun deleteEvaluation(id: String) = repository.deleteEvaluation(id)
+    fun toggleAdminMode() {
+        _isAdminMode.value = !_isAdminMode.value
+    }
+
+    fun selectDate(date: LocalDate) {
+        _selectedDate.value = date
+    }
+
+    fun previousMonth() {
+        _currentMonth.value = _currentMonth.value.minusMonths(1)
+    }
+
+    fun nextMonth() {
+        _currentMonth.value = _currentMonth.value.plusMonths(1)
+    }
+
+    fun addEvaluation(evaluation: Evaluation) {
+        repository.addEvaluation(evaluation)
+    }
+
+    fun updateEvaluation(evaluation: Evaluation) {
+        repository.updateEvaluation(evaluation)
+    }
+
+    fun deleteEvaluation(id: String) {
+        repository.deleteEvaluation(id)
+    }
+
     fun getEvaluationById(id: String): Evaluation? = repository.getById(id)
 
     fun getEvaluationsForDate(date: LocalDate): List<Evaluation> =
         evaluations.value.filter { it.date == date }
 
-    fun getDatesWithEvaluations(month: LocalDate): Map<LocalDate, List<Evaluation>> =
+    fun getDatesWithEvaluations(month: LocalDate): Set<LocalDate> =
         evaluations.value
             .filter { it.date.year == month.year && it.date.month == month.month }
-            .groupBy { it.date }
+            .map { it.date }
+            .toSet()
 }
